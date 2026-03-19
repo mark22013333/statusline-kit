@@ -1,0 +1,17 @@
+{
+  "template": "standard",
+  "fields": {
+    "model": true,
+    "context_bar": true,
+    "context_tokens": true,
+    "cost": true,
+    "duration": true,
+    "api_duration": false,
+    "lines": true,
+    "git_branch": true,
+    "git_dirty": false,
+    "thinking": false,
+    "version": false,
+    "exceeds_200k": false
+  }
+}

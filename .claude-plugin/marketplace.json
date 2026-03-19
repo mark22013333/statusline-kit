@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "statusline-kit",
+  "description": "Statusline 工具包 — 可配置的 Claude Code 狀態列顯示、Session 資訊面板、預設模版切換",
+  "owner": {
+    "name": "Cheng"
+  },
+  "plugins": [
+    {
+      "name": "statusline-kit",
+      "description": "可配置的狀態列顯示、Session 資訊面板、預設模版切換",
+      "version": "1.0.0",
+      "author": {
+        "name": "Cheng"
+      },
+      "source": ".",
+      "category": "productivity"
+    }
+  ]
+}
