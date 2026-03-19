@@ -41,53 +41,27 @@ git --version
 
 ## 安裝
 
-### 步驟一：註冊 Marketplace
+在 Claude Code 中依序執行：
 
-開啟你的 Claude Code settings.json（`~/.claude/settings.json` 或 `~/.claude-company/settings.json`），在 `extraKnownMarketplaces` 中加入：
+```bash
+# 1. 註冊 Marketplace
+/plugin marketplace add mark22013333/statusline-kit
 
-```jsonc
-{
-  "extraKnownMarketplaces": {
-    "statusline-kit": {
-      "source": {
-        "source": "github",
-        "repo": "mark22013333/statusline-kit"
-      }
-    }
-  }
-}
-```
+# 2. 安裝 Plugin（安裝後自動啟用）
+/plugin install statusline-kit@statusline-kit
 
-### 步驟二：啟用 Plugin
+# 3. 重新載入 Plugin
+/reload-plugins
 
-在同一個 settings.json 的 `enabledPlugins` 中加入：
-
-```jsonc
-{
-  "enabledPlugins": {
-    "statusline-kit@statusline-kit": true
-  }
-}
-```
-
-### 步驟三：重啟 Claude Code
-
-關閉並重新開啟 Claude Code，讓 plugin 生效。
-
-### 步驟四：執行安裝精靈
-
-在 Claude Code 中執行：
-
-```
+# 4. 執行安裝精靈
 /statusline-setup
 ```
 
 安裝精靈會自動：
 1. 偵測安裝目標路徑（`~/.claude-company/` 或 `~/.claude/`）
 2. 讓你選擇初始模版（standard / minimal / dev / full）
-3. 複製 statusline 腳本
-4. 建立設定檔
-5. 更新 settings.json 的 `statusLine` 設定
+3. 複製 statusline 腳本與設定檔
+4. 更新 settings.json 的 `statusLine` 設定
 
 ## 使用
 
