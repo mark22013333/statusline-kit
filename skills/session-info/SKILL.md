@@ -93,31 +93,39 @@ user_invocable: true
 | 5 | duration | Session 經過時間 | ✅/❌ |
 | 6 | api_duration | API 等待時間 | ✅/❌ |
 | 7 | lines | 新增/刪除行數 | ✅/❌ |
-| 8 | git_branch | Git 分支名稱 | ✅/❌ |
-| 9 | git_dirty | Git 未提交變更標記（*） | ✅/❌ |
-| 10 | thinking | Thinking 模式狀態 | ✅/❌ |
-| 11 | version | Claude Code 版本號 | ✅/❌ |
-| 12 | exceeds_200k | 超過 200k tokens 警告 | ✅/❌ |
+| 8 | cwd | 目前目錄名稱 | ✅/❌ |
+| 9 | git_branch | Git 分支名稱 | ✅/❌ |
+| 10 | git_dirty | Git 未提交變更標記（*） | ✅/❌ |
+| 11 | thinking | Thinking 模式狀態 | ✅/❌ |
+| 12 | version | Claude Code 版本號 | ✅/❌ |
+| 13 | exceeds_200k | 超過 200k tokens 警告 | ✅/❌ |
+| 14 | usage_session | 5 小時 session 用量條 🔑 | ✅/❌ |
+| 15 | usage_weekly | 每週用量條 🔑 | ✅/❌ |
+| 16 | usage_sonnet | 每週 Sonnet 用量條 🔑 | ✅/❌ |
+| 17 | usage_extra | 額外用量 🔑 | ✅/❌ |
+
+🔑 ＝ 會讀 Keychain 裡的 OAuth token。設定檔沒寫的主行欄位視為 ✅，沒寫的 `usage_*` 視為 ❌。
 
 ## 預設模版
 
 | 模版 | 說明 | 包含欄位 |
 |------|------|---------|
 | minimal | 最精簡 | model, context_bar, cost |
-| standard | 標準 | model, context_bar, context_tokens, cost, duration, lines, git_branch |
-| full | 完整 | 全部欄位 |
-| dev | 開發者 | model, context_bar, cost, duration, api_duration, lines, git_branch, git_dirty, thinking |
+| standard | 標準 | model, context_bar, context_tokens, cost, duration, lines, cwd, git_branch |
+| full | 完整 | 全部 13 個主行欄位 |
+| dev | 開發者 | model, context_bar, cost, duration, api_duration, lines, cwd, git_branch, git_dirty, thinking |
 | monitor | 監控型 | model, context_bar, context_tokens, cost, duration, api_duration, exceeds_200k |
 ```
 
 3. 用 AskUserQuestion 讓使用者選擇：
    - 選項提供 5 個模版名 + 「自訂」選項
    - 如選「自訂」，再用 AskUserQuestion（multiSelect）讓使用者勾選要啟用的欄位
+   - 使用者要開啟任一 `usage_*` 時，先說明它會讀 Keychain 裡的 OAuth token，確認後才寫入
 
 4. 根據使用者輸入：
 
 **模版名稱**（minimal / standard / full / dev / monitor）：
-- 按下方定義更新所有欄位
+- 按下方定義更新 13 個主行欄位，**`usage_*` 四個維持原值**
 - `template` 設為該模版名
 
 **自訂欄位切換**：
@@ -127,9 +135,9 @@ user_invocable: true
 **模版定義**：
 ```
 minimal:    model, context_bar, cost
-standard:   model, context_bar, context_tokens, cost, duration, lines, git_branch
-full:       model, context_bar, context_tokens, cost, duration, api_duration, lines, git_branch, git_dirty, thinking, version, exceeds_200k
-dev:        model, context_bar, cost, duration, api_duration, lines, git_branch, git_dirty, thinking
+standard:   model, context_bar, context_tokens, cost, duration, lines, cwd, git_branch
+full:       model, context_bar, context_tokens, cost, duration, api_duration, lines, cwd, git_branch, git_dirty, thinking, version, exceeds_200k
+dev:        model, context_bar, cost, duration, api_duration, lines, cwd, git_branch, git_dirty, thinking
 monitor:    model, context_bar, context_tokens, cost, duration, api_duration, exceeds_200k
 ```
 
@@ -155,3 +163,4 @@ monitor:    model, context_bar, context_tokens, cost, duration, api_duration, ex
 - 修改設定檔後 statusline 會在下次更新時自動套用，**不需要重啟**
 - `context_tokens` 依賴 `context_bar`，若 `context_bar` 關閉則 `context_tokens` 無效
 - `git_dirty` 依賴 `git_branch`，若 `git_branch` 關閉則 `git_dirty` 無效
+- 用量條資料快取在 `/tmp/claude/statusline-usage-cache.json`（60 秒），剛開啟時最多等一分鐘才出現

@@ -35,10 +35,20 @@ command -v jq
 
 用 AskUserQuestion 讓使用者選擇初始模版：
 
-- **standard**（推薦）— model, context_bar, context_tokens, cost, duration, lines, git_branch
+- **standard**（推薦）— model, context_bar, context_tokens, cost, duration, lines, cwd, git_branch
 - **minimal** — model, context_bar, cost
-- **dev** — model, context_bar, cost, duration, api_duration, lines, git_branch, git_dirty, thinking
-- **full** — 全部 12 個欄位
+- **dev** — model, context_bar, cost, duration, api_duration, lines, cwd, git_branch, git_dirty, thinking
+- **full** — 全部 13 個主行欄位
+- **monitor** — model, context_bar, context_tokens, cost, duration, api_duration, exceeds_200k
+
+### 3.5 詢問是否開啟用量條（會讀 Keychain）
+
+用 AskUserQuestion 詢問，**預設選項為「不開啟」**，並在問題中如實說明：
+
+> session／weekly／sonnet／extra 用量條的資料來自 Anthropic 用量 API。開啟後腳本會從 macOS Keychain（Linux 為 `secret-tool`）讀取 Claude Code 自己的 OAuth token 去呼叫，token 只會送到 Anthropic 官方的用量 API。不開啟則那段程式碼完全不會執行。
+
+- **不開啟**（推薦）— 四個 `usage_*` 維持 `false`
+- **開啟** — `usage_session`、`usage_weekly`、`usage_sonnet`、`usage_extra` 設為 `true`
 
 ### 4. 安裝檔案
 
@@ -57,7 +67,7 @@ chmod +x {安裝目標}/statusline.sh
 
 #### 4b. 建立設定檔
 
-讀取 `{plugin_base_dir}/references/default-config.json` 作為基底，按使用者選擇的模版修改 fields，然後用 Write 工具寫入 `{安裝目標}/statusline-config.json`。
+讀取 `{plugin_base_dir}/references/default-config.json` 作為基底，按使用者選擇的模版修改 13 個主行欄位、按步驟 3.5 的答案設定四個 `usage_*`，然後用 Write 工具寫入 `{安裝目標}/statusline-config.json`。
 
 模版定義參考 `{plugin_base_dir}/references/templates.md`。
 
@@ -68,11 +78,13 @@ chmod +x {安裝目標}/statusline.sh
 ```json
 "statusLine": {
   "type": "command",
-  "command": "bash \"$HOME/{相對路徑}/statusline.sh\""
+  "command": "bash \"$HOME/{相對路徑}/statusline.sh\"",
+  "refreshInterval": 1
 }
 ```
 
 - `{相對路徑}` 根據安裝目標決定（`.claude-company` 或 `.claude`）
+- `refreshInterval` 單位是秒，官方最小值為 1；彩虹動畫的 30 秒週期是配合這個上限調的
 - 如果 `statusLine` 已存在，詢問使用者是否覆蓋
 - 使用 Edit 工具修改，不要覆寫整個 settings.json
 
@@ -92,6 +104,7 @@ echo '{"model":{"display_name":"Test"},"context_window":{"context_window_size":2
 - 腳本: {安裝目標}/statusline.sh
 - 設定: {安裝目標}/statusline-config.json
 - 模版: {選擇的模版}
+- 用量條: {開啟／未開啟}
 - settings.json: 已更新
 
 ### 使用方式
@@ -109,3 +122,4 @@ echo '{"model":{"display_name":"Test"},"context_window":{"context_window_size":2
 - 不要修改使用者的 settings.json 中 statusLine 以外的設定
 - 如果已有 statusline 設定，先備份再覆蓋
 - jq 是必要依賴，安裝前檢查
+- 用量條會讀 Keychain，使用者沒明確同意就不要開
