@@ -84,7 +84,7 @@ chmod +x {安裝目標}/statusline.sh
 ```
 
 - `{相對路徑}` 根據安裝目標決定（`.claude-company` 或 `.claude`）
-- `refreshInterval` 單位是秒，官方最小值為 1；彩虹動畫的 30 秒週期是配合這個上限調的
+- `refreshInterval` 單位是秒，官方最小值為 1；彩虹動畫的速度（15 秒一圈＋每 4 秒脈動）是配合這個上限調的
 - 如果 `statusLine` 已存在，詢問使用者是否覆蓋
 - 使用 Edit 工具修改，不要覆寫整個 settings.json
 

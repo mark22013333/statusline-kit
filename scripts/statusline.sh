@@ -107,22 +107,25 @@ rainbow_str() {
     if [ -z "$now_ms" ] || [ "$now_ms" -lt 1000000000000 ] 2>/dev/null; then
         now_ms=$(( $(date +%s) * 1000 ))
     fi
-    # offset：以絕對時間戳算 hue，完整一圈 30 秒（與刷新率無關）
+    # offset：以絕對時間戳算 hue，完整一圈 15 秒（與刷新率無關）
     #
-    # 週期為什麼是 30 秒（2026-09-04 實測後調整，原本 9.6 秒）：
-    # statusLine 的 refreshInterval 官方最小值就是 1（單位為秒，見
-    # code.claude.com/docs/en/statusline），閒置時每秒只重繪一次是硬上限，
-    # 提高刷新率這條路走不通。所以每次重繪的 hue 位移＝360÷週期秒數：
-    #   9.6 秒一圈 → 每秒跳 37.5 度，一圈只有 9.6 格，肉眼是一格一格跳
-    #   30  秒一圈 → 每秒跳 12   度，才看得出是「流動」
+    # 速度的硬上限：statusLine 的 refreshInterval 官方最小值就是 1（單位為秒，見
+    # code.claude.com/docs/en/statusline），閒置時每秒只重繪一次，而且腳本每次
+    # 執行只產生一張靜態畫面，一秒內不可能有動畫。所以每次重繪的 hue 位移＝
+    # 360÷週期秒數，週期越短看起來越「跳」。
+    #   9.6 秒一圈（最早的版本）→ 每秒跳 37.5 度，不是 step 的倍數，每個字各自亂換色
+    #   15  秒一圈、每字 36 度  → 每秒 24 度＝⅔ 格，慢慢流動（2026-09-27 多版本並排預覽後選定）
     # 打字或 agent 在跑時有事件驅動的額外重繪（debounce 300ms），會比這更順。
     #
-    # 模數必須是週期的整數倍：900000 = 30 圈 × 30000ms。
-    # 原本的 1000000 不是 9600 的整數倍，計數回繞時 hue 會瞬間跳一大步
-    # （約每 16.7 分鐘突兀跳一次）；900000 回繞時剛好從 359 度接回 0 度。
+    # 模數必須是週期的整數倍：900000 = 60 圈 × 15000ms，
+    # 回繞時剛好從 359 度接回 0 度，不會突兀跳一下。
     local ms_tail=$(( now_ms % 900000 ))
-    local offset=$(( ( ms_tail * 360 / 30000 ) % 360 ))
-    local step=24   # hue degrees per character
+    local offset=$(( ( ms_tail * 360 / 15000 ) % 360 ))
+    local step=36   # hue degrees per character：10 個字走完一整圈彩虹
+    # 脈動：每 4 秒中的第 1 秒整串往白色混 55% 並加粗，下一秒恢復。
+    # 只有「亮／不亮」兩個狀態，一秒一幀也不會被看成卡頓。
+    local lit=false
+    [ $(( now_ms / 1000 % 4 )) -eq 0 ] && lit=true
     local out="" i r g b
     for (( i=0; i<${#text}; i++ )); do
         local ch="${text:$i:1}"
@@ -131,7 +134,14 @@ rainbow_str() {
         else
             local hue=$(( (offset + i * step) % 360 ))
             read -r r g b <<< "$(_hue_to_rgb $hue)"
-            out+="\033[38;2;${r};${g};${b}m${ch}"
+            if $lit; then
+                r=$(( r + (255 - r) * 55 / 100 ))
+                g=$(( g + (255 - g) * 55 / 100 ))
+                b=$(( b + (255 - b) * 55 / 100 ))
+                out+="\033[1;38;2;${r};${g};${b}m${ch}"
+            else
+                out+="\033[38;2;${r};${g};${b}m${ch}"
+            fi
         fi
     done
     printf '%b%b' "$out" "$reset"
